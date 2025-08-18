@@ -9,7 +9,7 @@ name = "echo-comment"
 readme = "README.md"
 repository = "https://github.com/lmmx/echo-comment"
 rust-version = "1.87"
-version = "0.1.5"
+version = "0.1.6"
 
 [[bin]]
 name = "comment-echo"

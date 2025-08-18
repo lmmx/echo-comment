@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/lmmx/echo-comment/compare/v0.1.5...v0.1.6) - 2025-08-18
+
+### <!-- 5 -->Refactor
+
+- modularise; more tests ([#1](https://github.com/lmmx/echo-comment/pull/1))
+
+### <!-- 8 -->Styling
+
+- don't lint target
+
+### <!-- 9 -->Other
+
+- use echo-comment on itself
+
 ## [0.1.5](https://github.com/lmmx/echo-comment/compare/v0.1.4...v0.1.5) - 2025-08-18
 
 ### <!-- 7 -->Build System and CI
