@@ -1,6 +1,7 @@
 default: test
 
-precommit-ci: lint
+precommit: lint
+precommit-ci: lint-ci
 prepush: test
 
 e:
@@ -84,6 +85,13 @@ fix-eof-ws mode="":
           .
 
 lint:
+    just lint-action
+    just lint-ci
+
+lint-action:
+    actionlint .github/workflows/CI.yml
+
+lint-ci:
     taplo lint
     taplo format --check
     just fix-eof-ws check

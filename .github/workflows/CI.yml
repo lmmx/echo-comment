@@ -71,6 +71,7 @@ jobs:
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: echo-comment,comment-echo
+          archive: echo-comment-$target
           target: ${{ matrix.target }}
           tar: all
           zip: windows
