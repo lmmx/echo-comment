@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3](https://github.com/lmmx/echo-comment/compare/v0.1.2...v0.1.3) - 2025-08-18
+
+### <!-- 2 -->Bug Fixes
+
+- use conventional commits on releases
+
+### <!-- 8 -->Styling
+
+- lint
+
+### <!-- 9 -->Other
+
+- auto-upload binaries to the release
+
 ## [0.1.2](https://github.com/lmmx/echo-comment/compare/v0.1.1...v0.1.2) - 2025-08-18
 
 ### <!-- 7 -->Build System and CI
