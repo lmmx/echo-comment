@@ -2,7 +2,7 @@ default: test
 
 # Justfile recipe using echo-comment (echo the comments)
 demo-jf:
-    #!/usr/bin/env target/debug/echo-comment
+    #!/usr/bin/env echo-comment
     set -euo pipefail
     # 🎉 Hello world from comment!
     python -c "print(f'{2+2=}')"
