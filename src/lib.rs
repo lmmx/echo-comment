@@ -3,6 +3,14 @@ use std::io::Write;
 use std::process::Command;
 use tempfile::NamedTempFile;
 
+macro_rules! debug {
+    ($($arg:tt)*) => {
+        if std::env::var("ECHO_COMMENT_DEBUG").is_ok() {
+            eprintln!($($arg)*);
+        }
+    };
+}
+
 #[derive(Debug)]
 pub enum Mode {
     CommentToEcho,  // echo-comment: comments become echo statements
@@ -10,22 +18,31 @@ pub enum Mode {
 }
 
 pub fn run_script(script_path: &str, script_args: &[String], mode: Mode) -> Result<(), Box<dyn std::error::Error>> {
+    debug!("DEBUG: Processing script: {}", script_path);
+    debug!("DEBUG: Mode: {:?}", mode);
+
     // Read the input script
     let content = fs::read_to_string(script_path).map_err(|e| {
         format!("Failed to read script '{}': {}", script_path, e)
     })?;
+
+    debug!("DEBUG: Script content:\n{}", content);
     
     // Create a temporary file for the processed script
     let mut temp_file = NamedTempFile::new()?;
     
     // Always start with a proper shebang
     writeln!(temp_file, "#!/usr/bin/env bash")?;
-    writeln!(temp_file, "set -euo pipefail")?;
     
     // Process each line based on mode
-    for line in content.lines() {
-        if line.starts_with("#!") {
+    let mut is_first_line = true;
+    for (i, line) in content.lines().enumerate() {
+        debug!("Processing line {}: '{}'", i, line);
+
+        if is_first_line && line.starts_with("#!") {
             // Skip original shebang - we already added our own
+            debug!("DEBUG: Skipping first-line shebang: {}", line);
+            is_first_line = false;
             continue;
         }
         
@@ -33,9 +50,16 @@ pub fn run_script(script_path: &str, script_args: &[String], mode: Mode) -> Resu
             Mode::CommentToEcho => process_comment_to_echo(line),
             Mode::EchoToComment => process_echo_to_comment(line),
         };
-        
-        writeln!(temp_file, "{}", processed_line)?;
+
+        debug!("{} -> {}", line, processed_line);
+
+        if let Err(e) = writeln!(temp_file, "{}", processed_line) {
+            debug!("ERROR writing to temp file: {}", e);
+            return Err(e.into());
+        }
     }
+
+    debug!("Finished processing all lines");
 
     // Flush and persist the temp file to get a path we can execute
     temp_file.flush()?;
