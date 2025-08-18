@@ -1,4 +1,4 @@
-use echo_comment::{run_script, Mode};
+use echo_comment::{Mode, run_script};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let env_args: Vec<String> = std::env::args().collect();

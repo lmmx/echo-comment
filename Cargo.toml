@@ -1,15 +1,15 @@
 [package]
-name = "echo-comment"
-version = "0.1.0"
-edition = "2024"
-rust-version = "1.87"
-description = "A bidirectional bash interpreter that converts comments ↔ echo statements"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/lmmx/comment-echo"
 authors = ["Louis Maddox <louismmx@gmail.com>"]
-keywords = ["bash", "shell", "automation", "scripting", "comments"]
 categories = ["command-line-utilities", "development-tools"]
+description = "A bidirectional bash interpreter that converts comments ↔ echo statements"
+edition = "2024"
+keywords = ["automation", "bash", "comments", "scripting", "shell"]
+license = "MIT OR Apache-2.0"
+name = "echo-comment"
 readme = "README.md"
+repository = "https://github.com/lmmx/comment-echo"
+rust-version = "1.87"
+version = "0.1.0"
 
 [[bin]]
 name = "comment-echo"
@@ -23,5 +23,5 @@ path = "src/echo_comment.rs"
 tempfile = "3.20"
 
 [profile.release]
-strip = true  # Remove debug symbols for smaller binaries
-lto = true    # Link-time optimization
+lto = true   # Link-time optimization
+strip = true # Remove debug symbols for smaller binaries

@@ -1,5 +1,8 @@
 default: test
 
+e:
+    $EDITOR Justfile
+
 # Justfile recipe using echo-comment (echo the comments)
 demo-jf:
     #!/usr/bin/env echo-comment
@@ -57,3 +60,33 @@ ship:
 publish:
     git_token := $(gh auth token 2>/dev/null) || echo $PUBLISH_GITHUB_TOKEN
     release-plz release --backend github --git-token $git_token
+
+# ------------------------------------------------------------
+
+fix-eof-ws mode="":
+    #!/usr/bin/env sh
+    ARGS=''
+    if [ "{{mode}}" = "check" ]; then
+        ARGS="--check-only"
+    fi
+    whitespace-format --add-new-line-marker-at-end-of-file \
+          --new-line-marker=linux \
+          --normalize-new-line-markers \
+          --exclude ".git/|target/|dist/|.json$|.lock$|.parquet$|.venv/|.stubs/|\..*cache/" \
+          $ARGS \
+          .
+
+code-quality:
+    taplo lint
+    taplo format --check
+    just fix-eof-ws check
+    cargo machete
+    cargo fmt --check --all
+
+code-quality-fix:
+    taplo lint
+    taplo format
+    just fix-eof-ws
+    cargo machete
+    cargo fmt --all
+
