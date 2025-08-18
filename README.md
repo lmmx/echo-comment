@@ -110,7 +110,7 @@ comment-echo hello.sh
 
 ## Features
 
-- **Bidirectional conversion**: `echo-comment` (comments → echoes) and `comment-echo` (echoes → comments)
+- **Bidirectional**: `echo-comment` (comments → echoes) and `comment-echo` (echoes → comments)
 - **Perfect for Justfiles**: Clean recipes that become verbose at runtime
 - **Preserves formatting**: Maintains indentation and structure
 - **Opt out**: Double `##` gets left as `#` comment
