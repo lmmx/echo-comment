@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     if env_args.len() < 2 {
         eprintln!("Usage: comment-echo <script.sh> [args...]");
-        eprintln!("Converts comments to echo statements and runs the script");
+        eprintln!("Converts echo statements to comments and runs the script");
         std::process::exit(1);
     }
     
@@ -28,5 +28,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Everything after the script name goes to the script
     let script_args: Vec<String> = env_args[2..].to_vec();
 
-    run_script(&args.script, &script_args, Mode::CommentToEcho)
+    run_script(&args.script, &script_args, Mode::EchoToComment)
 }
