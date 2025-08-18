@@ -1,16 +1,9 @@
-use echo_comment::{Mode, run_script};
+use echo_comment::{Mode, cli::run_cli};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let env_args: Vec<String> = std::env::args().collect();
-
-    if env_args.len() < 2 {
-        eprintln!("Usage: echo-comment <script.sh> [args...]");
-        eprintln!("Converts comments to echo statements and runs the script");
-        std::process::exit(1);
-    }
-
-    let script = &env_args[1];
-    let script_args: Vec<String> = env_args[2..].to_vec();
-
-    run_script(script, &script_args, Mode::CommentToEcho)
+fn main() {
+    run_cli(
+        Mode::CommentToEcho,
+        "echo-comment",
+        "Converts comments to echo statements and runs the script",
+    );
 }
