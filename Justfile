@@ -1,7 +1,13 @@
 default: test
 
+precommit-ci: code-quality
+prepush: test
+
 e:
     $EDITOR Justfile
+
+install-hooks:
+   pre-commit install
 
 # Justfile recipe using echo-comment (echo the comments)
 demo-jf:
