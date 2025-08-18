@@ -11,8 +11,8 @@ install-hooks:
    pre-commit install
 
 # Justfile recipe using echo-comment (echo the comments)
-demo-jf:
-    #!/usr/bin/env echo-comment
+demo-jf colour="blue":
+    #!/usr/bin/env -S echo-comment --color {{colour}}
     set -euo pipefail
     # 🎉 Hello world from comment!
     python -c "print(f'{2+2=}')"
@@ -22,14 +22,28 @@ test:
     cargo nextest run
 
 # Run the echo-comment example (comments become echoes)
+[working-directory: 'examples']
 demo-ec:
-    bat examples/example-echo-comment.sh
-    ./target/debug/echo-comment examples/example-echo-comment.sh
+    bat example-echo-comment.sh
+    ./example-echo-comment.sh
+
+# Run the echo-comment-in-red example (comments become echoes, in red text)
+[working-directory: 'examples']
+demo-ec-red:
+    bat example-echo-comment-in-red.sh
+    ./example-echo-comment-in-red.sh
+
+# Run the echo-comment-with-shell-flags example (comments become echoes, with shell flags)
+[working-directory: 'examples']
+demo-ec-shell-flags:
+    bat example-echo-comment-with-shell-flags.sh
+    ./example-echo-comment-with-shell-flags.sh
 
 # Run the comment-echo example (echoes become comments) 
+[working-directory: 'examples']
 demo-ce:
-    bat examples/example-echo-comment.sh
-    ./target/debug/comment-echo examples/example-comment-echo.sh
+    bat example-echo-comment.sh
+    ./example-comment-echo.sh
 
 ship:
     #!/usr/bin/env -S bash -euo pipefail

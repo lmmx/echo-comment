@@ -1,4 +1,4 @@
-#!/usr/bin/env target/debug/comment-echo
+#!/usr/bin/env comment-echo
 # test comment
 echo "hello"
 python -c "print('world')"

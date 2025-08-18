@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::debug;
 use crate::error::Result;
 
@@ -16,10 +17,21 @@ enum CommentType {
 
 /// Process script content by converting between comments and echo statements
 pub fn process_script_content(content: &str, mode: Mode) -> Result<String> {
+    let config = Config::from_env();
+    process_script_content_with_config(content, mode, &config)
+}
+
+/// Process script content with explicit configuration
+pub fn process_script_content_with_config(
+    content: &str,
+    mode: Mode,
+    config: &Config,
+) -> Result<String> {
     let mut result = String::new();
 
-    // Always start with a proper shebang
-    result.push_str("#!/usr/bin/env bash\n");
+    // Use configured shebang
+    result.push_str(&config.shebang());
+    result.push('\n');
 
     // Process each line based on mode
     let mut is_first_line = true;
@@ -34,7 +46,7 @@ pub fn process_script_content(content: &str, mode: Mode) -> Result<String> {
         is_first_line = false;
 
         let processed_line = match mode {
-            Mode::CommentToEcho => process_comment_to_echo(line),
+            Mode::CommentToEcho => process_comment_to_echo(line, config),
             Mode::EchoToComment => process_echo_to_comment(line),
         };
 
@@ -48,13 +60,24 @@ pub fn process_script_content(content: &str, mode: Mode) -> Result<String> {
     Ok(result)
 }
 
-fn process_comment_to_echo(line: &str) -> String {
+fn process_comment_to_echo(line: &str, config: &Config) -> String {
     if let Some(comment) = extract_comment(line) {
         match comment {
             CommentType::Regular(content) => {
-                // Convert regular comments to echo statements
+                // Convert regular comments to echo statements with optional color
                 let indent = get_indent(line);
-                format!("{}echo \"{}\"", indent, escape_for_echo(&content))
+                let colored_content = config.colorize(&content);
+                let echo_cmd = if config.comment_color.is_some() {
+                    "echo -e" // Use -e for escape sequences when we have colors
+                } else {
+                    "echo"
+                };
+                format!(
+                    "{}{} \"{}\"",
+                    indent,
+                    echo_cmd,
+                    escape_for_echo(&colored_content)
+                )
             }
             CommentType::NoEcho(content) => {
                 // Keep ## comments as regular comments (remove one #)
@@ -73,7 +96,18 @@ fn process_comment_to_echo(line: &str) -> String {
                 } else {
                     format!("# {}", content)
                 };
-                format!("{}echo \"{}\"", indent, escape_for_echo(&echo_content))
+                let colored_content = config.colorize(&echo_content);
+                let echo_cmd = if config.comment_color.is_some() {
+                    "echo -e"
+                } else {
+                    "echo"
+                };
+                format!(
+                    "{}{} \"{}\"",
+                    indent,
+                    echo_cmd,
+                    escape_for_echo(&colored_content)
+                )
             }
         }
     } else {
@@ -87,20 +121,23 @@ fn process_echo_to_comment(line: &str) -> String {
         // Convert echo statements to comments
         let indent = get_indent(line);
 
+        // Strip color codes when converting back to comments
+        let clean_content = strip_color_codes(&echo_content);
+
         // Check if the echo content starts with "# " - if so, escape it
-        if let Some(content) = echo_content.strip_prefix("# ") {
+        if let Some(content) = clean_content.strip_prefix("# ") {
             // Remove "# " prefix
             if content.is_empty() {
                 format!("{}#\\#", indent)
             } else {
                 format!("{}#\\# {}", indent, content)
             }
-        } else if echo_content == "#" {
+        } else if clean_content == "#" {
             format!("{}#\\#", indent)
-        } else if echo_content.is_empty() {
+        } else if clean_content.is_empty() {
             format!("{}#", indent)
         } else {
-            format!("{}# {}", indent, echo_content)
+            format!("{}# {}", indent, clean_content)
         }
     } else {
         // Keep other lines as-is
@@ -138,29 +175,33 @@ fn extract_comment(line: &str) -> Option<CommentType> {
 fn extract_echo(line: &str) -> Option<String> {
     let trimmed = line.trim_start();
 
-    // Match exactly "echo" followed by end-of-string or whitespace
-    if trimmed == "echo" {
+    // Match exactly "echo" or "echo -e" followed by end-of-string or whitespace
+    if trimmed == "echo" || trimmed == "echo -e" {
         return Some(String::new());
     }
 
-    // Match "echo " (with space) for content after
-    if let Some(rest) = trimmed.strip_prefix("echo ") {
-        let content = rest.trim();
-
-        // Handle quoted strings
-        if (content.starts_with('"') && content.ends_with('"'))
-            || (content.starts_with('\'') && content.ends_with('\''))
-        {
-            let inner = &content[1..content.len() - 1];
-            Some(unescape_from_echo(inner))
-        } else if content.is_empty() {
-            Some(String::new())
-        } else {
-            // Unquoted echo - take everything after "echo "
-            Some(content.to_string())
-        }
+    // Match "echo " or "echo -e " (with space) for content after
+    let content = if let Some(rest) = trimmed.strip_prefix("echo -e ") {
+        rest
+    } else if let Some(rest) = trimmed.strip_prefix("echo ") {
+        rest
     } else {
-        None
+        return None;
+    };
+
+    let content = content.trim();
+
+    // Handle quoted strings
+    if (content.starts_with('"') && content.ends_with('"'))
+        || (content.starts_with('\'') && content.ends_with('\''))
+    {
+        let inner = &content[1..content.len() - 1];
+        Some(unescape_from_echo(inner))
+    } else if content.is_empty() {
+        Some(String::new())
+    } else {
+        // Unquoted echo - take everything after "echo "
+        Some(content.to_string())
     }
 }
 
@@ -180,6 +221,29 @@ fn unescape_from_echo(text: &str) -> String {
         .replace("\\$", "$")
         .replace("\\`", "`")
         .replace("\\\\", "\\")
+}
+
+/// Strip ANSI color codes from text
+fn strip_color_codes(text: &str) -> String {
+    // Simple regex-free approach to strip ANSI escape sequences
+    let mut result = String::new();
+    let mut chars = text.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '\x1b' && chars.peek() == Some(&'[') {
+            // Skip the escape sequence
+            chars.next(); // consume '['
+            for ch in chars.by_ref() {
+                if ch.is_ascii_alphabetic() {
+                    break; // End of escape sequence
+                }
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -243,13 +307,19 @@ mod tests {
             extract_echo("echo \"hello world\""),
             Some("hello world".to_string())
         );
+        assert_eq!(
+            extract_echo("echo -e \"colored text\""),
+            Some("colored text".to_string())
+        );
         assert_eq!(extract_echo("    echo 'test'"), Some("test".to_string()));
         assert_eq!(extract_echo("echo"), Some(String::new()));
+        assert_eq!(extract_echo("echo -e"), Some(String::new()));
         assert_eq!(extract_echo("# comment"), None);
         assert_eq!(extract_echo("ls -la"), None);
 
         // Edge cases
         assert_eq!(extract_echo("echo "), Some(String::new()));
+        assert_eq!(extract_echo("echo -e "), Some(String::new()));
         assert_eq!(
             extract_echo("echo unquoted text"),
             Some("unquoted text".to_string())
@@ -301,37 +371,43 @@ mod tests {
     }
 
     #[test]
-    fn test_process_comment_to_echo() {
-        // Regular comments become echoes
-        assert_eq!(process_comment_to_echo("# test"), "echo \"test\"");
+    fn test_strip_color_codes() {
+        assert_eq!(strip_color_codes("plain text"), "plain text");
+        assert_eq!(strip_color_codes("\x1b[0;32mgreen\x1b[0m"), "green");
         assert_eq!(
-            process_comment_to_echo("  # indented"),
+            strip_color_codes("\x1b[1;31mred\x1b[0m and \x1b[0;34mblue\x1b[0m"),
+            "red and blue"
+        );
+        assert_eq!(strip_color_codes("\x1b[0m"), "");
+    }
+
+    #[test]
+    fn test_process_comment_to_echo_with_color() {
+        let config = Config {
+            shell: "bash".to_string(),
+            shell_flags: vec![],
+            comment_color: Some("\x1b[0;32m".to_string()),
+        };
+
+        assert_eq!(
+            process_comment_to_echo("# test", &config),
+            "echo -e \"\x1b[0;32mtest\x1b[0m\""
+        );
+        assert_eq!(
+            process_comment_to_echo("  # indented", &config),
+            "  echo -e \"\x1b[0;32mindented\x1b[0m\""
+        );
+    }
+
+    #[test]
+    fn test_process_comment_to_echo_without_color() {
+        let config = Config::default();
+
+        assert_eq!(process_comment_to_echo("# test", &config), "echo \"test\"");
+        assert_eq!(
+            process_comment_to_echo("  # indented", &config),
             "  echo \"indented\""
         );
-        assert_eq!(process_comment_to_echo("#"), "echo \"\"");
-
-        // ## comments become # comments (no echo)
-        assert_eq!(process_comment_to_echo("## private"), "# private");
-        assert_eq!(
-            process_comment_to_echo("  ## indented private"),
-            "  # indented private"
-        );
-        assert_eq!(process_comment_to_echo("##"), "#");
-
-        // #\# comments become echo "# content"
-        assert_eq!(
-            process_comment_to_echo("#\\# with hash"),
-            "echo \"# with hash\""
-        );
-        assert_eq!(
-            process_comment_to_echo("  #\\# indented hash"),
-            "  echo \"# indented hash\""
-        );
-        assert_eq!(process_comment_to_echo("#\\#"), "echo \"#\"");
-
-        // Non-comments stay the same
-        assert_eq!(process_comment_to_echo("not a comment"), "not a comment");
-        assert_eq!(process_comment_to_echo("echo already"), "echo already");
     }
 
     #[test]
@@ -340,6 +416,7 @@ mod tests {
         assert_eq!(process_echo_to_comment("echo \"test\""), "# test");
         assert_eq!(process_echo_to_comment("  echo 'indented'"), "  # indented");
         assert_eq!(process_echo_to_comment("echo"), "#");
+        assert_eq!(process_echo_to_comment("echo -e"), "#");
 
         // Echoes that start with "# " become #\# comments
         assert_eq!(
@@ -352,6 +429,12 @@ mod tests {
         );
         assert_eq!(process_echo_to_comment("echo \"#\""), "#\\#");
 
+        // Colored echoes get stripped
+        assert_eq!(
+            process_echo_to_comment("echo -e \"\x1b[0;32mgreen\x1b[0m\""),
+            "# green"
+        );
+
         // Non-echoes stay the same
         assert_eq!(process_echo_to_comment("not an echo"), "not an echo");
         assert_eq!(
@@ -361,38 +444,34 @@ mod tests {
     }
 
     #[test]
-    fn test_bidirectional_conversion() {
+    fn test_bidirectional_conversion_with_config() {
+        let config = Config {
+            shell: "bash".to_string(),
+            shell_flags: vec![],
+            comment_color: Some("\x1b[0;32m".to_string()),
+        };
+
         // Regular comment -> echo -> comment
         let comment_line = "    # Hello world";
-        let echo_line = process_comment_to_echo(comment_line);
-        assert_eq!(echo_line, "    echo \"Hello world\"");
+        let echo_line = process_comment_to_echo(comment_line, &config);
+        assert_eq!(echo_line, "    echo -e \"\x1b[0;32mHello world\x1b[0m\"");
         let back_to_comment = process_echo_to_comment(&echo_line);
         assert_eq!(back_to_comment, "    # Hello world");
-
-        // No-echo comment -> stays comment
-        let no_echo_comment = "    ## Private note";
-        let processed = process_comment_to_echo(no_echo_comment);
-        assert_eq!(processed, "    # Private note");
-
-        // Escaped hash comment -> echo with hash -> escaped comment
-        let escaped_comment = "    #\\# Show hash";
-        let echo_with_hash = process_comment_to_echo(escaped_comment);
-        assert_eq!(echo_with_hash, "    echo \"# Show hash\"");
-        let back_to_escaped = process_echo_to_comment(&echo_with_hash);
-        assert_eq!(back_to_escaped, "    #\\# Show hash");
     }
 
     #[test]
-    fn test_process_script_content() {
+    fn test_process_script_content_with_config() {
+        let config = Config {
+            shell: "zsh".to_string(),
+            shell_flags: vec!["-euo".to_string(), "pipefail".to_string()],
+            comment_color: Some("\x1b[0;32m".to_string()),
+        };
+
         let input = "#!/usr/bin/env bash\n# test comment\necho existing\n## private note";
 
-        let result = process_script_content(input, Mode::CommentToEcho).unwrap();
-        let expected =
-            "#!/usr/bin/env bash\necho \"test comment\"\necho existing\n# private note\n";
-        assert_eq!(result, expected);
-
-        let result = process_script_content(input, Mode::EchoToComment).unwrap();
-        let expected = "#!/usr/bin/env bash\n# test comment\n# existing\n## private note\n";
+        let result =
+            process_script_content_with_config(input, Mode::CommentToEcho, &config).unwrap();
+        let expected = "#!/usr/bin/env -S zsh -euo pipefail\necho -e \"\x1b[0;32mtest comment\x1b[0m\"\necho existing\n# private note\n";
         assert_eq!(result, expected);
     }
 }

@@ -23,7 +23,7 @@ fn test_error_display_messages() {
 
     let script_exec_error = EchoCommentError::ScriptExecution {
         message: "Command failed".to_string(),
-        source: io::Error::new(io::ErrorKind::Other, "Process error"),
+        source: io::Error::other("Process error"),
     };
 
     let display_msg = format!("{}", script_exec_error);
@@ -54,7 +54,7 @@ fn test_result_type_alias() {
 
     fn returns_error() -> Result<String> {
         Err(EchoCommentError::FileWrite {
-            source: io::Error::new(io::ErrorKind::Other, "test error"),
+            source: io::Error::other("test error"),
         })
     }
 
@@ -65,7 +65,7 @@ fn test_result_type_alias() {
 #[test]
 fn test_error_debug_format() {
     let error = EchoCommentError::TempFileCreation {
-        source: io::Error::new(io::ErrorKind::Other, "temp error"),
+        source: io::Error::other("temp error"),
     };
 
     let debug_output = format!("{:?}", error);

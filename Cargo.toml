@@ -20,6 +20,11 @@ name = "echo-comment"
 path = "src/echo_comment.rs"
 
 [dependencies]
+clap = { default-features = false, features = [
+  "color",
+  "derive",
+  "std",
+], version = "4.5.45" }
 tempfile = "3.20"
 
 [profile.release]
