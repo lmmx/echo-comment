@@ -187,53 +187,6 @@ echo "# Hash comment with hash"
 }
 
 #[test]
-fn test_script_arguments_passthrough() {
-    let script_content = r#"#!/usr/bin/env bash
-# Script started with args: $@
-echo "Arg 1: $1"
-echo "Arg 2: $2"
-# Script completed
-"#;
-
-    let temp_script = create_temp_script(script_content);
-    let script_path = temp_script.path().to_str().unwrap();
-
-    // Run with arguments
-    let output = Command::new("target/debug/echo-comment")
-        .arg(script_path)
-        .arg("hello")
-        .arg("world")
-        .output()
-        .expect("Failed to execute binary");
-
-    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-    let exit_code = output.status.code().unwrap_or(-1);
-
-    assert_eq!(
-        exit_code, 0,
-        "Script should exit successfully. stderr: {}",
-        stderr
-    );
-    assert!(
-        stdout.contains("Script started with args:"),
-        "Should echo start comment"
-    );
-    assert!(
-        stdout.contains("Arg 1: hello"),
-        "Should pass first argument"
-    );
-    assert!(
-        stdout.contains("Arg 2: world"),
-        "Should pass second argument"
-    );
-    assert!(
-        stdout.contains("Script completed"),
-        "Should echo end comment"
-    );
-}
-
-#[test]
 fn test_error_handling_missing_file() {
     let (exit_code, _stdout, stderr) = run_binary("echo-comment", "/nonexistent/file.sh");
 
@@ -250,14 +203,12 @@ fn test_error_handling_no_arguments() {
         .output()
         .expect("Failed to execute binary");
 
-    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
     let exit_code = output.status.code().unwrap_or(-1);
 
     assert_eq!(
-        exit_code, 1,
-        "Should exit with code 1 for missing arguments"
+        exit_code, 2,
+        "Should exit with code 2 for missing arguments"
     );
-    assert!(stderr.contains("Usage:"), "Should show usage message");
 }
 
 #[test]
@@ -318,5 +269,52 @@ fn test_empty_and_whitespace_lines() {
     assert!(
         stdout.contains("test"),
         "Should handle commands with empty lines around"
+    );
+}
+
+#[test]
+fn test_script_arguments_passthrough() {
+    let script_content = r#"#!/usr/bin/env bash
+# Script started with args: $@
+echo "Arg 1: $1"
+echo "Arg 2: $2"
+# Script completed
+"#;
+
+    let temp_script = create_temp_script(script_content);
+    let script_path = temp_script.path().to_str().unwrap();
+
+    // Run with arguments
+    let output = Command::new("target/debug/echo-comment")
+        .arg(script_path)
+        .arg("hello")
+        .arg("world")
+        .output()
+        .expect("Failed to execute binary");
+
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    let exit_code = output.status.code().unwrap_or(-1);
+
+    assert_eq!(
+        exit_code, 0,
+        "Script should exit successfully. stderr: {}",
+        stderr
+    );
+    assert!(
+        stdout.contains("Script started with args:"),
+        "Should echo start comment"
+    );
+    assert!(
+        stdout.contains("Arg 1: hello"),
+        "Should pass first argument"
+    );
+    assert!(
+        stdout.contains("Arg 2: world"),
+        "Should pass second argument"
+    );
+    assert!(
+        stdout.contains("Script completed"),
+        "Should echo end comment"
     );
 }

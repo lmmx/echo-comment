@@ -50,6 +50,11 @@ At runtime, `echo-comment` automatically converts comments to echo statements, s
 
 To write a comment that _doesn't_ get echoed, simply start the line with 2: `## ...`
 
+The tool runs in either direction, so exposes two binary names:
+
+- **`echo-comment`**: Converts `# comments` → `echo "comments"`
+- **`comment-echo`**: Converts `echo "text"` → `# text`
+
 ## Demo
 
 Here is our script `hello.sh` with 3 steps
@@ -76,7 +81,6 @@ Run normally, you get _Hiss_ and _Goodbye_:
 ```bash
 bash hello.sh 
 ```
-⇣
 ```
 🐍 Hiss
 Goodbye
@@ -89,7 +93,6 @@ _'Echo the comments'_: a running commentary on all 3 steps:
 ```bash
 echo-comment hello.sh 
 ```
-⇣
 ```
 1) Run some Python
 🐍 Hiss
@@ -105,7 +108,6 @@ _'Comment out the echoes'_: _Hiss_, no _Goodbye_:
 ```bash
 comment-echo hello.sh 
 ```
-⇣
 ```
 🐍 Hiss
 ```
@@ -118,27 +120,6 @@ comment-echo hello.sh
 - **Opt out**: Use `##` for silent comments that won't be echoed, `#\#` to echo text starting with `#`
 - **No dependencies**: Ships as a single binary
 - **Cross-platform**: Works on Linux, macOS, and Windows
-
-## Installation
-
-### Option 1: Install from crates.io
-```bash
-cargo install comment-echo
-```
-
-### Option 2: Install with cargo-binstall
-```bash
-cargo binstall comment-echo
-```
-
-### Option 3: Build from source
-```bash
-git clone https://github.com/lmmx/echo-comment
-cd echo-comment
-cargo build --release
-```
-
-Both `echo-comment` and `comment-echo` binaries will be installed.
 
 ## Usage
 
@@ -168,45 +149,6 @@ When you run `just build-and-publish`, you'll see:
 📋 Running tests...
 🚀 Publishing...
 ```
-
-### Ship Binary with Your Project
-
-For maximum portability, ship the binary in your repo:
-
-```bash
-# Build and copy to your project
-cargo build --release
-cp target/release/comment-echo bin/comment-echo
-cp target/release/echo-comment bin/echo-comment
-chmod +x bin/comment-echo bin/echo-comment
-```
-
-Then use relative paths in your justfile:
-```just
-build:
-    #!/usr/bin/env bin/comment-echo
-    # Your clean script here...
-```
-
-### Standalone Script Usage
-
-```bash
-# Convert comments to echoes and run
-echo-comment script.sh
-
-# Convert echoes to comments and run  
-comment-echo verbose-script.sh
-
-# Pass arguments to the script
-echo-comment deploy.sh --env=production
-```
-
-## Mode
-
-The tool runs in either mode based on the binary name:
-
-- **`echo-comment`**: Converts `# comments` → `echo "comments"`
-- **`comment-echo`**: Converts `echo "text"` → `# text`
 
 ## Examples
 
@@ -266,6 +208,41 @@ pg_dump mydb > backup.sql
 2. **Readability**: Foreground your actual logic with syntax highlighting
 3. **Better Diffs**: Code changes are separate from message changes
 4. **Maintainability**: Makes it trivial to document code
+
+### Standalone Script Usage
+
+```bash
+# Convert comments to echoes and run
+echo-comment script.sh
+
+# Convert echoes to comments and run  
+comment-echo verbose-script.sh
+
+# Pass arguments to the script
+echo-comment deploy.sh --env=production
+```
+
+Note that it does take flags and will consume any not separated with `--`.
+These are used for custom colours etc. It will not consume `--help`.
+
+### Ship Binary with Your Project
+
+For maximum portability, ship the binary in your repo:
+
+```bash
+# Build and copy to your project
+cargo build --release
+cp target/release/comment-echo bin/comment-echo
+cp target/release/echo-comment bin/echo-comment
+chmod +x bin/comment-echo bin/echo-comment
+```
+
+Then use relative paths in your justfile:
+```just
+build:
+    #!/usr/bin/env bin/comment-echo
+    # Your clean script here...
+```
 
 ## Contributing
 

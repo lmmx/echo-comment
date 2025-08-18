@@ -1,4 +1,4 @@
-#!/usr/bin/env echo-comment
+#!/usr/bin/env -S echo-comment --color red
 # test comment
 echo "hello"
 # hiss

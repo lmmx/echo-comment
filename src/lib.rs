@@ -1,12 +1,15 @@
 use std::fs;
 
 pub mod cli;
+pub mod color;
+pub mod config;
 pub mod error;
 pub mod processor;
 pub mod runner;
 
+pub use config::Config;
 pub use error::{EchoCommentError, Result};
-pub use processor::{Mode, process_script_content};
+pub use processor::{Mode, process_script_content, process_script_content_with_config};
 pub use runner::ScriptRunner;
 
 macro_rules! debug {
