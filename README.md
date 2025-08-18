@@ -1,4 +1,4 @@
-# comment-echo
+# echo-comment
 
 A bidirectional bash interpreter that converts between comments and echo statements, making your shell scripts cleaner and more maintainable.
 
@@ -30,7 +30,7 @@ The actual business logic is completely obscured by echo statements!
 Write your scripts with clean comments instead:
 
 ```bash
-#!/usr/bin/env comment-echo
+#!/usr/bin/env echo-comment
 set -euo pipefail
 
 # 🧹 Cleaning up any existing .so files...
@@ -46,9 +46,9 @@ maturin develop --release
 gh run download "${latest_run_id}" -p wheel*
 ```
 
-At runtime, `comment-echo` automatically converts comments to echo statements, so you get the verbose output without cluttering your source code.
+At runtime, `echo-comment` automatically converts comments to echo statements, so you get the verbose output without cluttering your source code.
 
-## Example
+## Demo
 
 Here is our script `hello.sh` with 3 steps
 
@@ -70,7 +70,7 @@ echo "Goodbye"
 To run this normally you get a _Hiss_ and a _Goodbye_:
 
 ```bash
-louis 🌟 ~/dev/comment-echo $ bash hello.sh 
+bash hello.sh 
 ```
 ⇣
 ```
@@ -78,20 +78,10 @@ louis 🌟 ~/dev/comment-echo $ bash hello.sh
 Goodbye
 ```
 
-To run this via `echo-comment` you get a _Hiss_ and no more _Goodbye_ (the `echo` became a comment):
+`echo-comment` _'echoes the comments'_: you get a running commentary on all 3 steps:
 
 ```bash
-louis 🌟 ~/dev/comment-echo $ ./target/debug/echo-comment hello.sh 
-```
-⇣
-```
-🐍 Hiss
-```
-
-To run this via `comment-echo` you get a running commentary on all 3 steps (the comments now `echo`):
-
-```bash
-louis 🌟 ~/dev/comment-echo $ ./target/debug/comment-echo hello.sh 
+echo-comment hello.sh 
 ```
 ⇣
 ```
@@ -102,11 +92,22 @@ louis 🌟 ~/dev/comment-echo $ ./target/debug/comment-echo hello.sh
 Goodbye
 ```
 
+`comment-echo` _'comments out the echos'_: you get a _Hiss_ and no more _Goodbye_:
+
+```bash
+comment-echo hello.sh 
+```
+⇣
+```
+🐍 Hiss
+```
+
 ## Features
 
-- **Bidirectional conversion**: `comment-echo` (comments → echoes) and `echo-comment` (echoes → comments)
+- **Bidirectional conversion**: `echo-comment` (comments → echoes) and `comment-echo` (echoes → comments)
 - **Perfect for Justfiles**: Clean recipes that become verbose at runtime
 - **Preserves formatting**: Maintains indentation and structure
+- **Opt out**: Double `##` gets left as `#` comment
 - **No dependencies**: Ships as a single binary
 - **Cross-platform**: Works on Linux, macOS, and Windows
 

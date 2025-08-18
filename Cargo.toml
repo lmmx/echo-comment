@@ -1,13 +1,13 @@
 [package]
-name = "comment-echo"
+name = "echo-comment"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.87"
 description = "A bidirectional bash interpreter that converts comments ↔ echo statements"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/yourusername/comment-echo"
-authors = ["Your Name <your.email@example.com>"]
-keywords = ["bash", "shell", "justfile", "automation", "scripting", "comments"]
+repository = "https://github.com/lmmx/comment-echo"
+authors = ["Louis Maddox <louismmx@gmail.com>"]
+keywords = ["bash", "shell", "automation", "scripting", "comments"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
@@ -21,7 +21,7 @@ path = "src/echo_comment.rs"
 [dependencies]
 facet = "0.28"
 facet-args = "0.28"
-tempfile = "3.8"
+tempfile = "3.20"
 
 [profile.release]
 strip = true  # Remove debug symbols for smaller binaries

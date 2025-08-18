@@ -1,5 +1,5 @@
 use facet::Facet;
-use comment_echo::{run_script, Mode};
+use echo_comment::{run_script, Mode};
 
 #[derive(Facet)]
 struct Args {
