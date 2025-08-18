@@ -48,6 +48,8 @@ gh run download "${latest_run_id}" -p wheel*
 
 At runtime, `echo-comment` automatically converts comments to echo statements, so you get the verbose output without cluttering your source code.
 
+To write a comment that _doesn't_ get echoed, simply start the line with 2: `## ...`
+
 ## Demo
 
 Here is our script `hello.sh` with 3 steps
@@ -113,7 +115,7 @@ comment-echo hello.sh
 - **Bidirectional**: `echo-comment` (comments → echoes) and `comment-echo` (echoes → comments)
 - **Perfect for Justfiles**: Clean recipes that become verbose at runtime
 - **Preserves formatting**: Maintains indentation and structure
-- **Opt out**: Double `##` gets left as `#` comment
+- **Opt out**: Use `##` for silent comments that won't be echoed, `#\#` to echo text starting with `#`
 - **No dependencies**: Ships as a single binary
 - **Cross-platform**: Works on Linux, macOS, and Windows
 

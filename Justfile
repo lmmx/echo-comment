@@ -1,3 +1,6 @@
+test:
+    cargo nextest run
+
 # Build and ship both binaries to bin/ directory
 ship-binaries:
     cargo build --release
