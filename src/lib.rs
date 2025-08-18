@@ -94,7 +94,7 @@ fn process_echo_to_comment(line: &str) -> String {
 fn extract_comment(line: &str) -> Option<String> {
     let trimmed = line.trim_start();
     if let Some(rest) = trimmed.strip_prefix("# ") {
-        Some(rest.to_string())
+        Some(rest.trim_start().to_string()) // Trim leading whitespace after "# "
     } else if trimmed == "#" {
         Some(String::new())
     } else {
@@ -105,31 +105,25 @@ fn extract_comment(line: &str) -> Option<String> {
 fn extract_echo(line: &str) -> Option<String> {
     let trimmed = line.trim_start();
     
-    // Match: echo "content" or echo 'content' or just "echo"
-    if let Some(rest) = trimmed.strip_prefix("echo") {
-        // Check if there's nothing after "echo" or just whitespace
-        if rest.is_empty() || rest.trim().is_empty() {
-            return Some(String::new());
-        }
+    // Match exactly "echo" followed by end-of-string or whitespace
+    if trimmed == "echo" {
+        return Some(String::new());
+    }
+    
+    // Match "echo " (with space) for content after
+    if let Some(rest) = trimmed.strip_prefix("echo ") {
+        let content = rest.trim();
         
-        // Handle the case where there's a space after echo
-        if let Some(content) = rest.strip_prefix(' ') {
-            let content = content.trim();
-            
-            // Handle quoted strings
-            if (content.starts_with('"') && content.ends_with('"')) || 
-               (content.starts_with('\'') && content.ends_with('\'')) {
-                let inner = &content[1..content.len()-1];
-                Some(unescape_from_echo(inner))
-            } else if content.is_empty() {
-                Some(String::new())
-            } else {
-                // Unquoted echo - take everything after "echo "
-                Some(content.to_string())
-            }
-        } else {
-            // This handles "echo" with no space after it
+        // Handle quoted strings
+        if (content.starts_with('"') && content.ends_with('"')) || 
+           (content.starts_with('\'') && content.ends_with('\'')) {
+            let inner = &content[1..content.len()-1];
+            Some(unescape_from_echo(inner))
+        } else if content.is_empty() {
             Some(String::new())
+        } else {
+            // Unquoted echo - take everything after "echo "
+            Some(content.to_string())
         }
     } else {
         None
@@ -167,7 +161,7 @@ mod tests {
         assert_eq!(extract_comment("#"), Some(String::new()));
         assert_eq!(extract_comment("echo hello"), None);
         assert_eq!(extract_comment("#!/bin/bash"), None);
-
+        
         // Edge cases
         assert_eq!(extract_comment("#no space"), None); // No space after #
         assert_eq!(extract_comment("  #  extra spaces  "), Some("extra spaces  ".to_string()));
@@ -182,7 +176,7 @@ mod tests {
         assert_eq!(extract_echo("echo"), Some(String::new()));
         assert_eq!(extract_echo("# comment"), None);
         assert_eq!(extract_echo("ls -la"), None);
-
+        
         // Edge cases
         assert_eq!(extract_echo("echo "), Some(String::new())); // echo with just space
         assert_eq!(extract_echo("echo unquoted text"), Some("unquoted text".to_string()));
@@ -215,7 +209,7 @@ mod tests {
             "complex: \"$var\" and `echo test` with \\path",
             "", // empty string
         ];
-
+        
         for original in test_cases {
             let escaped = escape_for_echo(original);
             let unescaped = unescape_from_echo(&escaped);
@@ -228,7 +222,7 @@ mod tests {
         let comment_line = "    # Hello world";
         let echo_line = process_comment_to_echo(comment_line);
         assert_eq!(echo_line, "    echo \"Hello world\"");
-
+        
         let back_to_comment = process_echo_to_comment(&echo_line);
         assert_eq!(back_to_comment, "    # Hello world");
     }
@@ -257,7 +251,7 @@ mod tests {
         let special_comment = "# File: $HOME/test & echo \"hello\"";
         let echo_line = process_comment_to_echo(special_comment);
         assert_eq!(echo_line, "echo \"File: \\$HOME/test & echo \\\"hello\\\"\"");
-
+        
         let back_to_comment = process_echo_to_comment(&echo_line);
         assert_eq!(back_to_comment, "# File: $HOME/test & echo \"hello\"");
     }
