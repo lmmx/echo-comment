@@ -30,8 +30,7 @@ The actual business logic is completely obscured by echo statements!
 Write your scripts with clean comments instead:
 
 ```bash
-#!/usr/bin/env echo-comment
-set -euo pipefail
+#!/usr/bin/env -S echo-comment --shell-flags="-euo pipefail"
 
 # 🧹 Cleaning up any existing .so files...
 find python/ -name "*.so" -delete || true
