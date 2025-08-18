@@ -214,7 +214,8 @@ fn test_error_handling_no_arguments() {
 #[test]
 fn test_special_characters_in_comments() {
     let script_content = r#"#!/usr/bin/env bash
-# Comment with "quotes" and $variables and `backticks`
+test_var="EXPANDED_VALUE"
+# Comment with "quotes" and $test_var and `printf "CMD_OUTPUT"`
 # Comment with emojis: 🚀 🎉 ✅
 # Comment with special chars: & | > < * ? [ ] { } ( )
 "#;
@@ -234,12 +235,12 @@ fn test_special_characters_in_comments() {
         "Should handle quotes in comments"
     );
     assert!(
-        stdout.contains("variables"),
-        "Should handle dollar signs in comments"
+        stdout.contains("EXPANDED_VALUE"),
+        "Should expand variables in comments"
     );
     assert!(
-        stdout.contains("backticks"),
-        "Should handle backticks in comments"
+        stdout.contains("CMD_OUTPUT"),
+        "Should handle backticks in comments (command substitution)"
     );
     assert!(stdout.contains("🚀"), "Should handle emojis in comments");
     assert!(

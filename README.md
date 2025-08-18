@@ -115,7 +115,8 @@ comment-echo hello.sh
 
 - **Bidirectional**: `echo-comment` (comments → echoes) and `comment-echo` (echoes → comments)
 - **Perfect for Justfiles**: Clean recipes that become verbose at runtime
-- **Preserves formatting**: Maintains indentation and structure
+- **Preserves formatting**: Maintains indentation and structure, does not need quotation marks
+- **Variable expansion**: Comments support `$variables`, <code>`backtick subshells`</code>, and any other shell expansions
 - **Opt out**: Use `##` for silent comments that won't be echoed, `#\#` to echo text starting with `#`
 - **No dependencies**: Ships as a single binary
 - **Cross-platform**: Works on Linux, macOS, and Windows
@@ -180,6 +181,27 @@ When you run `just build-and-publish`, you'll see:
 📋 Running tests...
 🚀 Publishing...
 ```
+
+### Variable Expansion in Comments
+
+Comments support full shell expansion - variables, and command substitution (subshells).
+
+```just
+demo-expand:
+    #!/usr/bin/env echo-comment
+    x=123
+    # Value: $x
+```
+
+- The comment is equivalent to `echo "Value: $x"`
+
+Running `just demo-expand` outputs:
+
+```
+Value: 123
+```
+
+This makes comments context-aware yet easy to silence, perfect for logging current state or computed values.
 
 ## Examples
 

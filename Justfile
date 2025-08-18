@@ -10,6 +10,14 @@ e:
 install-hooks:
    pre-commit install
 
+# -----------------------------------------------------------
+
+demo-expand:
+    #!/usr/bin/env echo-comment
+    x=123
+    # Value: $x
+    echo "Value: $x"
+
 # Justfile recipe using echo-comment (echo the comments)
 demo-jf colour="blue":
     #!/usr/bin/env -S echo-comment --color {{colour}}
@@ -51,21 +59,22 @@ clip:
     cargo clippy --tests
 
 ship:
-    #!/usr/bin/env -S bash -euo pipefail
-    # Refuse to run if not on master branch or not up to date with origin/master
+    #!/usr/bin/env -S echo-comment --shell-flags="-euo pipefail" --color red
+    ## Refuse to run if not on master branch or not up to date with origin/master
     branch="$(git rev-parse --abbrev-ref HEAD)"
     if [[ "$branch" != "master" ]]; then
-    echo -e "\033[1;31m❌ Refusing to run: not on 'master' branch (current: $branch)\033[0m"
+        # ❌ "Refusing to run: not on 'master' branch
+        echo " --- (current branch: $branch)"
     exit 1
     fi
     git fetch origin master
     local_rev="$(git rev-parse HEAD)"
     remote_rev="$(git rev-parse origin/master)"
     if [[ "$local_rev" != "$remote_rev" ]]; then
-    echo -e "\033[1;31m❌ Refusing to run: local master branch is not up to date with origin/master\033[0m"
-    echo -e "Local HEAD:  $local_rev"
-    echo -e "Origin HEAD: $remote_rev"
-    echo -e "Please pull/rebase to update."
+        # ❌ Refusing to run: local master branch is not up to date with origin/master
+        echo -e "Local HEAD:  $local_rev"
+        echo -e "Origin HEAD: $remote_rev"
+        # "Please pull/rebase to update."
     exit 1
     fi
     release-plz update

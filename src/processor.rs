@@ -209,18 +209,15 @@ fn get_indent(line: &str) -> String {
     line.chars().take_while(|c| c.is_whitespace()).collect()
 }
 
+/// Only escape double quotes to keep the echo syntactically valid
+/// Leave $, `, and \ alone so they can be expanded/interpreted by the shell
 fn escape_for_echo(text: &str) -> String {
-    text.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('$', "\\$")
-        .replace('`', "\\`")
+    text.replace('"', "\\\"")
 }
 
+/// Only unescape double quotes to match the escaping above
 fn unescape_from_echo(text: &str) -> String {
     text.replace("\\\"", "\"")
-        .replace("\\$", "$")
-        .replace("\\`", "`")
-        .replace("\\\\", "\\")
 }
 
 /// Strip ANSI color codes from text
@@ -356,9 +353,9 @@ mod tests {
         let test_cases = vec![
             "simple text",
             "text with \"quotes\"",
-            "text with $variables",
-            "text with `commands`",
-            "text with \\backslashes",
+            "text with $variables",    // These should NOT be escaped
+            "text with `commands`",    // These should NOT be escaped
+            "text with \\backslashes", // These should NOT be escaped
             "complex: \"$var\" and `echo test` with \\path",
             "",
         ];
@@ -368,6 +365,12 @@ mod tests {
             let unescaped = unescape_from_echo(&escaped);
             assert_eq!(original, unescaped, "Failed roundtrip for: {}", original);
         }
+
+        // Test that only quotes are escaped
+        assert_eq!(escape_for_echo("$var"), "$var");
+        assert_eq!(escape_for_echo("`cmd`"), "`cmd`");
+        assert_eq!(escape_for_echo("\\path"), "\\path");
+        assert_eq!(escape_for_echo("\"quoted\""), r#"\"quoted\""#);
     }
 
     #[test]
