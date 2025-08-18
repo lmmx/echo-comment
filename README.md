@@ -67,7 +67,9 @@ python -c 'print("\N{SNAKE} Hiss\n\N{CAT FACE} Meow")' | grep 🐍
 echo "Goodbye"
 ```
 
-To run this normally you get a _Hiss_ and a _Goodbye_:
+### bash
+
+Run normally, you get _Hiss_ and _Goodbye_:
 
 ```bash
 bash hello.sh 
@@ -78,7 +80,9 @@ bash hello.sh
 Goodbye
 ```
 
-`echo-comment` _'echoes the comments'_: you get a running commentary on all 3 steps:
+### echo-comment
+
+_'Echo the comments'_: a running commentary on all 3 steps:
 
 ```bash
 echo-comment hello.sh 
@@ -92,7 +96,9 @@ echo-comment hello.sh
 Goodbye
 ```
 
-`comment-echo` _'comments out the echos'_: you get a _Hiss_ and no more _Goodbye_:
+### comment-echo
+
+_'Comment out the echoes'_: _Hiss_, no _Goodbye_:
 
 ```bash
 comment-echo hello.sh 
