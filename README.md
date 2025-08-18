@@ -122,6 +122,38 @@ comment-echo hello.sh
 
 ## Usage
 
+### Shebang lines
+
+As well as pointing the binary at a bash script, you can invoke it on a program from a shebang line.
+
+The shebang line can be in one of two forms: **simple** (no configuration)
+
+```sh
+#!/usr/bin/env echo-comment 
+```
+
+or **with arguments** (setting fields in the [cli::Args](https://github.com/lmmx/echo-comment/blob/master/src/cli.rs) struct):
+
+```sh
+#!/usr/bin/env -S echo-comment --color green --shell bash --shell-flags="-euo pipefail"
+```
+
+The `Args` parser takes 1 positional argument as the bash script it's invoking and passes the rest on ("trailing" set) positional arguments.
+
+Besides this, it takes some arguments which can be configured for your use:
+
+- `--shell` / `-s` (default: "bash")
+- `--shell-args` (no default). Note that they must **always** be passed with the `=` syntax.
+- `--color` / `-c` (no default). One of the names in the
+  [color](https://github.com/lmmx/echo-comment/blob/master/src/color.rs) module or an ANSI code of
+  your choice.
+  - Supports: black/red/green/yellow/blue/magenta/cyan/white plus "bright-" and "bold-" variants.
+    Plus aliases: orange (= yellow) and pink (= magenta).
+
+**Beware** of accidentally invoking it twice: if you use a script with an `echo-comment` shebang line with flags set,
+but then point the `echo-comment` binary at it without flags set on the command line, the latter
+takes precedence and your script will run without the flags in the shebang line. This may be unexpected!
+
 ### With Justfiles (Recommended)
 
 Create clean, readable recipes:
@@ -129,8 +161,7 @@ Create clean, readable recipes:
 ```just
 # justfile
 build-and-publish:
-    #!/usr/bin/env echo-comment
-    set -euo pipefail
+    #!/usr/bin/env -S echo-comment --shell-flags="-euo pipefail"
     
     # 🧹 Cleaning up build artifacts...
     find . -name "*.so" -delete || true
@@ -143,6 +174,7 @@ build-and-publish:
 ```
 
 When you run `just build-and-publish`, you'll see:
+
 ```
 🧹 Cleaning up build artifacts...
 📋 Running tests...
@@ -154,6 +186,7 @@ When you run `just build-and-publish`, you'll see:
 ### Converting Comments to Echoes
 
 **Input (`script.sh`):**
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -169,6 +202,7 @@ echo "App is now live"
 ```
 
 **Running with `echo-comment script.sh`:**
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -186,6 +220,7 @@ echo "App is now live"
 ### Converting Echoes to Comments
 
 **Input (`verbose.sh`):**
+
 ```bash
 #!/usr/bin/env bash
 echo "Backing up database"
@@ -194,6 +229,7 @@ echo "Database backed up successfully"
 ```
 
 **Running with `comment-echo verbose.sh`:**
+
 ```bash
 #!/usr/bin/env bash
 # Backing up database

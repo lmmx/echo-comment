@@ -45,6 +45,11 @@ demo-ce:
     bat example-echo-comment.sh
     ./example-comment-echo.sh
 
+# ------------------------------------------------------------
+
+clip:
+    cargo clippy --tests
+
 ship:
     #!/usr/bin/env -S bash -euo pipefail
     # Refuse to run if not on master branch or not up to date with origin/master
