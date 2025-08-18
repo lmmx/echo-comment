@@ -60,7 +60,7 @@ impl Args {
 }
 
 /// Run the CLI with the specified mode and binary name for usage messages
-pub fn run_cli(mode: Mode, binary_name: &str, description: &str) {
+pub fn run_cli(mode: Mode) {
     // Parse arguments with clap - much simpler approach
     let args = Args::parse();
 

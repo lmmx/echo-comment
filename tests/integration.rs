@@ -203,7 +203,6 @@ fn test_error_handling_no_arguments() {
         .output()
         .expect("Failed to execute binary");
 
-    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
     let exit_code = output.status.code().unwrap_or(-1);
 
     assert_eq!(
