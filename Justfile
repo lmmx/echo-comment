@@ -31,15 +31,6 @@ demo-ce:
     bat examples/example-echo-comment.sh
     ./target/debug/comment-echo examples/example-comment-echo.sh
 
-# Convert an echo-heavy script back to comment form
-clean-script:
-    #!/usr/bin/env bin/echo-comment
-    set -euo pipefail
-    echo "🧹 This echo becomes a comment"
-    echo "foo" | grep "f"
-    echo "📋 This one too"
-    ls -la | grep "."
-
 ship:
     #!/usr/bin/env -S bash -euo pipefail
     # Refuse to run if not on master branch or not up to date with origin/master
@@ -85,6 +76,8 @@ fix-eof-ws mode="":
           .
 
 lint:
+    #!/usr/bin/env echo-comment
+    # 🧹 Begin linting!
     just lint-action
     just lint-ci
 
