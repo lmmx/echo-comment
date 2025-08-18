@@ -63,8 +63,7 @@ ship:
     ## Refuse to run if not on master branch or not up to date with origin/master
     branch="$(git rev-parse --abbrev-ref HEAD)"
     if [[ "$branch" != "master" ]]; then
-        # ❌ "Refusing to run: not on 'master' branch
-        echo " --- (current branch: $branch)"
+        # ❌ Refusing to run: not on 'master' branch (current: $branch)
     exit 1
     fi
     git fetch origin master
@@ -72,9 +71,9 @@ ship:
     remote_rev="$(git rev-parse origin/master)"
     if [[ "$local_rev" != "$remote_rev" ]]; then
         # ❌ Refusing to run: local master branch is not up to date with origin/master
-        echo -e "Local HEAD:  $local_rev"
-        echo -e "Origin HEAD: $remote_rev"
-        # "Please pull/rebase to update."
+        # Local HEAD:  $local_rev
+        # Origin HEAD: $remote_rev
+        # Please pull/rebase to update.
     exit 1
     fi
     release-plz update
