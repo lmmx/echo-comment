@@ -59,7 +59,7 @@ ship:
     fi
     release-plz update
     git add .
-    git commit -m "Upgrades"
+    git commit -m "chore(release): Upgrades"
     git push
     just publish
 
