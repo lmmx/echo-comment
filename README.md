@@ -133,12 +133,12 @@ cargo binstall comment-echo
 
 ### Option 3: Build from source
 ```bash
-git clone https://github.com/yourusername/comment-echo
-cd comment-echo
+git clone https://github.com/lmmx/echo-comment
+cd echo-comment
 cargo build --release
 ```
 
-Both `comment-echo` and `echo-comment` binaries will be installed.
+Both `echo-comment` and `comment-echo` binaries will be installed.
 
 ## Usage
 
@@ -149,7 +149,7 @@ Create clean, readable recipes:
 ```just
 # justfile
 build-and-publish:
-    #!/usr/bin/env comment-echo
+    #!/usr/bin/env echo-comment
     set -euo pipefail
     
     # 🧹 Cleaning up build artifacts...
@@ -192,23 +192,21 @@ build:
 
 ```bash
 # Convert comments to echoes and run
-comment-echo script.sh
+echo-comment script.sh
 
 # Convert echoes to comments and run  
-echo-comment verbose-script.sh
+comment-echo verbose-script.sh
 
 # Pass arguments to the script
-comment-echo deploy.sh --env=production
+echo-comment deploy.sh --env=production
 ```
 
-## Mode Detection
+## Mode
 
-The tool automatically detects which mode to use based on the binary name:
+The tool runs in either mode based on the binary name:
 
-- **`comment-echo`**: Converts `# comments` → `echo "comments"`
-- **`echo-comment`**: Converts `echo "text"` → `# text`
-
-Both binaries are the same executable - the behavior changes based on how it's invoked.
+- **`echo-comment`**: Converts `# comments` → `echo "comments"`
+- **`comment-echo`**: Converts `echo "text"` → `# text`
 
 ## Examples
 
@@ -229,7 +227,7 @@ kubectl rollout status deployment/app
 echo "App is now live"
 ```
 
-**Running with `comment-echo script.sh`:**
+**Running with `echo-comment script.sh`:**
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
@@ -254,7 +252,7 @@ pg_dump mydb > backup.sql
 echo "Database backed up successfully"
 ```
 
-**Running with `echo-comment verbose.sh`:**
+**Running with `comment-echo verbose.sh`:**
 ```bash
 #!/usr/bin/env bash
 # Backing up database
@@ -262,29 +260,12 @@ pg_dump mydb > backup.sql
 # Database backed up successfully
 ```
 
-## Integration with Pre-commit
-
-Add to your `.pre-commit-config.yaml`:
-
-```yaml
-repos:
-  - repo: local
-    hooks:
-      - id: build-check
-        name: Build Check
-        entry: bin/comment-echo
-        args: [scripts/build-check.sh]
-        language: system
-        pass_filenames: false
-```
-
 ## Why This Approach?
 
-1. **Separation of Concerns**: Comments describe intent, code does work
-2. **Better Diffs**: Code changes are separate from message changes
-3. **IDE Support**: Proper syntax highlighting for your actual logic
-4. **Maintainability**: Easy to update documentation without touching echo statements
-5. **Round-trip**: Convert echo-heavy legacy scripts to clean format
+1. **Low line noise**: Unlike `bash -v` or `set -x`, you just see the comment text
+2. **Readability**: Foreground your actual logic with syntax highlighting
+3. **Better Diffs**: Code changes are separate from message changes
+4. **Maintainability**: Makes it trivial to document code
 
 ## Contributing
 
