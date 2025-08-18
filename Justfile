@@ -1,6 +1,6 @@
 default: test
 
-precommit-ci: code-quality
+precommit-ci: lint
 prepush: test
 
 e:
@@ -83,17 +83,16 @@ fix-eof-ws mode="":
           $ARGS \
           .
 
-code-quality:
+lint:
     taplo lint
     taplo format --check
     just fix-eof-ws check
     cargo machete
     cargo fmt --check --all
 
-code-quality-fix:
+fmt:
     taplo lint
     taplo format
     just fix-eof-ws
     cargo machete
     cargo fmt --all
-

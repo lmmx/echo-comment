@@ -23,12 +23,11 @@ defaults:
 
 jobs:
   upload-assets:
-  upload-assets:
     name: ${{ matrix.target }}
     if: github.repository_owner == 'lmmx'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
-    continue-on-error: true  # Continue even if this target fails
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
