@@ -123,6 +123,14 @@ comment-echo hello.sh
 
 ## Usage
 
+### CLI
+
+If you want to pipe to it on the CLI, pass `/dev/stdin` (or `/dev/fd/0`) as the filename
+
+```sh
+echo "# hello" | echo-comment /dev/stdin --color=red
+```
+
 ### Shebang lines
 
 As well as pointing the binary at a bash script, you can invoke it on a program from a shebang line.
